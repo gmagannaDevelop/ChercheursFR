@@ -1,9 +1,23 @@
 library(ade4)
 library(xlsx)
+library(factoextra)
+library(dplyr)
+
+clean.names <- function(x){
+  strsplit(x, 
+           split = "(",
+           fixed = TRUE)[[1]][[1]]
+}
 
 dataSet <- read.xlsx("data.xlsx",sheetIndex=1)
-summary(dataSet)
 
+chercheurs <- dataSet
+row.names(chercheurs) <- chercheurs$geo.time
+row.names(chercheurs) <- unlist(lapply(row.names(chercheurs), clean.names))
+chercheurs <- subset(chercheurs, select = -c(geo.time))
+
+summary(dataSet)
+summary(chercheurs)
 
 #je transforme la premiere colonne de string en nombre
 dataSet$geo.time <- as.numeric(dataSet$geo.time)
@@ -30,11 +44,45 @@ barplot(dataScaled_Cor_Eigen$values, main = "Valeurs propres")
 #remarquons qu avec les 2 premiers axes on apporte suffisement d inertie
 
 data_pca <- dudi.pca(dataScaled, scann=F, nf = 2)
+ch.fr.pca <- dudi.pca(chercheurs, scann=FALSE, nf = 2)
+fviz_eig(ch.fr.pca) # C'est comme le barplot mais plus jolie.
+
+ch.fr.var <- get_pca_var(ch.fr.pca)
+ch.fr.var
+
+fviz_pca_ind(
+  ch.fr.pca,
+  col.ind = "cos2", # Color by the quality of representation
+  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+  repel = TRUE     # Avoid text overlapping
+)
+
+fviz_pca_biplot(
+  ch.fr.pca, 
+  repel = TRUE,
+  col.var = "#2E9FDF", # Variables color
+  col.ind = "#696969"  # Individuals color
+)
+
+fviz_contrib(ch.fr.pca, choice = "var", axes = 1, top = 10)
+# Contributions of variables to PC2
+fviz_contrib(ch.fr.pca, choice = "var", axes = 2, top = 10)
+
+if (FALSE){
+  # On a besoin de faire clustering pour faire cette visualisation
+fviz_pca_ind(ch.fr.pca,
+             geom.ind = "point", # show points only (nbut not "text")
+             col.ind = , # color by groups
+             palette = rainbow(6),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Groups"
+)
+}
 
 # les variables correlees sont tres proche l une de l autre
 # plus la distance a l origine est frande meilleure est la projection
 # co = column coordinate
 # c1 = column normed scores ie principal axes
-s.corcircle(data_pca$co)
+s.corcircle(ch.fr.pca$co)
 
 

@@ -6,65 +6,51 @@
 #             Joachim SNEESSENS
 #             Gustavo MAGAÑA LOPEZ
 
+
+## libraries necessaires :
 library(ade4)
 library(xlsx)
 library(factoextra)
 library(dplyr)
 library(FactoMineR)
 
+## Fonction pour nettoyer les donnees :
 clean.names <- function(x){
   strsplit(x, 
            split = "(",
            fixed = TRUE)[[1]][[1]]
 }
 
+# Importation des donnees depuis le fichier :
 dataSet <- read.xlsx("data.xlsx",sheetIndex=1)
 
+# Construction de la matrice (DataFrame) :
 chercheurs <- dataSet
 row.names(chercheurs) <- chercheurs$geo.time
 row.names(chercheurs) <- unlist(lapply(row.names(chercheurs), clean.names))
 chercheurs <- subset(chercheurs, select = -c(geo.time))
 
-summary(dataSet)
 summary(chercheurs)
 
-#je transforme la premiere colonne de string en nombre
-dataSet$geo.time <- as.numeric(dataSet$geo.time)
-
-#je centre mes donnees
-dataScaled <- scale(dataSet)
+# On centre les donnees
 chercheurs.scaled <- scale(chercheurs)
 
-if (FALSE){
-addmargins(
-  as.matrix(
-    chercheurs
-  )
-)
-}
-
-boxplot(dataSet, main = "avant centrage des donnees")
-boxplot(dataScaled, main = "apres centrage des donnees")
-
+# Effet de la transformation sur la distribution des donnees :
 boxplot(chercheurs, main = "avant centrage des donnees")
 boxplot(chercheurs.scaled, main = "apres centrage des donnees")
 
-#matrice des correlations
-MatrixOfCorrelation <- cor(dataScaled)
-MatrixOfCorrelation
-
+#matrice des correlations :
 chercheurs.corr <- cor(chercheurs.scaled)
 
-# pourcentage d inertie de chacun des axes, pour pouvoir decider combien
-#d axes nous allons conserver pour faire analyse
+# pourcentage d'inertie de chacun des axes, pour pouvoir decider combien
+# d'axes nous allons conserver pour faire analyse
 ch.fr.scaled.cor.eigen <- eigen(chercheurs.corr)
 ch.fr.scaled.inertia <- ch.fr.scaled.cor.eigen$values / sum(ch.fr.scaled.cor.eigen$values)
 ch.fr.scaled.inertia 
-
 barplot(ch.fr.scaled.cor.eigen$values, main = "Valeurs propres")
-#remarquons qu avec les 2 premiers axes on apporte suffisement d inertie
+# Remarquons qu avec les 2 premiers axes on apporte suffisement d inertie : surtout le premier.
 
-data_pca <- dudi.pca(dataScaled, scann=F, nf = 2)
+# ACP au moyen de ade4::dudi.pca
 ch.fr.pca <- dudi.pca(chercheurs.scaled, scann=FALSE, nf = 2)
 fviz_eig(ch.fr.pca) # C'est comme le barplot mais plus jolie.
 
@@ -98,12 +84,12 @@ fviz_contrib(ch.fr.pca, choice = "ind", axes = 2, top = 10)
 ch.fr.hcps <- HCPC(PCA(chercheurs.scaled))
 
 
-if (FALSE){
+if (T){
   # On a besoin de faire clustering pour faire cette visualisation
 fviz_pca_ind(ch.fr.pca,
              geom.ind = "point", # show points only (nbut not "text")
-             col.ind = , # color by groups
-             palette = rainbow(6),
+             col.ind = ch.fr.hcps$data.clust$clust, # color by groups
+             palette = rainbow(length(ch.fr.hcps$data.clust$clust)),
              addEllipses = TRUE, # Concentration ellipses
              legend.title = "Groups"
 )

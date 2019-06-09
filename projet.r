@@ -1,3 +1,11 @@
+################## UNIVERSITE DE MONS  ##################################
+################## FACULTE DE SCIENCES ##################################
+# COURS : Statistique multidimensionnelle
+# Professeur : Michel VOUE
+# Etudiants : Simon MATTENS
+#             Joachim SNEESSENS
+#             Gustavo MAGAÑA LOPEZ
+
 library(ade4)
 library(xlsx)
 library(factoextra)
@@ -24,23 +32,27 @@ dataSet$geo.time <- as.numeric(dataSet$geo.time)
 
 #je centre mes donnees
 dataScaled <- scale(dataSet)
+chercheurs.scaled <- scale(chercheurs)
 
 boxplot(dataSet, main = "avant centrage des donnees")
 boxplot(dataScaled, main = "apres centrage des donnees")
+
+boxplot(chercheurs, main = "avant centrage des donnees")
+boxplot(chercheurs.scaled, main = "apres centrage des donnees")
 
 #matrice des correlations
 MatrixOfCorrelation <- cor(dataScaled)
 MatrixOfCorrelation
 
+chercheurs.corr <- cor(chercheurs.scaled)
 
 # pourcentage d inertie de chacun des axes, pour pouvoir decider combien
 #d axes nous allons conserver pour faire analyse
+ch.fr.scaled.cor.eigen <- eigen(chercheurs.corr)
+ch.fr.scaled.inertia <- ch.fr.scaled.cor.eigen$values / sum(ch.fr.scaled.cor.eigen$values)
+ch.fr.scaled.inertia 
 
-dataScaled_Cor_Eigen <- eigen(MatrixOfCorrelation)
-dataScaled_inertia <- dataScaled_Cor_Eigen$values / sum(dataScaled_Cor_Eigen$values)
-dataScaled_inertia 
-
-barplot(dataScaled_Cor_Eigen$values, main = "Valeurs propres")
+barplot(ch.fr.scaled.cor.eigen$values, main = "Valeurs propres")
 #remarquons qu avec les 2 premiers axes on apporte suffisement d inertie
 
 data_pca <- dudi.pca(dataScaled, scann=F, nf = 2)

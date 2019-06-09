@@ -76,9 +76,16 @@ fviz_pca_biplot(
   col.ind = "#696969"  # Individuals color
 )
 
+# Contributions of variables to PC1
 fviz_contrib(ch.fr.pca, choice = "var", axes = 1, top = 10)
 # Contributions of variables to PC2
 fviz_contrib(ch.fr.pca, choice = "var", axes = 2, top = 10)
+
+# Contributions of individuals to PC1
+fviz_contrib(ch.fr.pca, choice = "ind", axes = 1, top = 10)
+# Contributions of individuals to PC2
+fviz_contrib(ch.fr.pca, choice = "ind", axes = 2, top = 10)
+
 
 if (FALSE){
   # On a besoin de faire clustering pour faire cette visualisation

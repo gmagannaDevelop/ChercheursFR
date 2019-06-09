@@ -10,6 +10,7 @@ library(ade4)
 library(xlsx)
 library(factoextra)
 library(dplyr)
+library(FactoMineR)
 
 clean.names <- function(x){
   strsplit(x, 
@@ -34,6 +35,14 @@ dataSet$geo.time <- as.numeric(dataSet$geo.time)
 dataScaled <- scale(dataSet)
 chercheurs.scaled <- scale(chercheurs)
 
+if (FALSE){
+addmargins(
+  as.matrix(
+    chercheurs
+  )
+)
+}
+
 boxplot(dataSet, main = "avant centrage des donnees")
 boxplot(dataScaled, main = "apres centrage des donnees")
 
@@ -56,7 +65,7 @@ barplot(ch.fr.scaled.cor.eigen$values, main = "Valeurs propres")
 #remarquons qu avec les 2 premiers axes on apporte suffisement d inertie
 
 data_pca <- dudi.pca(dataScaled, scann=F, nf = 2)
-ch.fr.pca <- dudi.pca(chercheurs, scann=FALSE, nf = 2)
+ch.fr.pca <- dudi.pca(chercheurs.scaled, scann=FALSE, nf = 2)
 fviz_eig(ch.fr.pca) # C'est comme le barplot mais plus jolie.
 
 ch.fr.var <- get_pca_var(ch.fr.pca)
@@ -85,6 +94,8 @@ fviz_contrib(ch.fr.pca, choice = "var", axes = 2, top = 10)
 fviz_contrib(ch.fr.pca, choice = "ind", axes = 1, top = 10)
 # Contributions of individuals to PC2
 fviz_contrib(ch.fr.pca, choice = "ind", axes = 2, top = 10)
+
+ch.fr.hcps <- HCPC(PCA(chercheurs.scaled))
 
 
 if (FALSE){

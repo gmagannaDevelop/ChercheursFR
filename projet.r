@@ -13,6 +13,7 @@ library(xlsx)
 library(factoextra)
 library(dplyr)
 library(FactoMineR)
+library(corrplot)
 
 ## Fonction pour nettoyer les donnees :
 clean.names <- function(x){
@@ -41,6 +42,7 @@ boxplot(chercheurs.scaled, main = "apres centrage des donnees")
 
 #matrice des correlations :
 chercheurs.corr <- cor(chercheurs.scaled)
+corrplot(chercheurs.corr)
 
 # pourcentage d'inertie de chacun des axes, pour pouvoir decider combien
 # d'axes nous allons conserver pour faire analyse
@@ -75,24 +77,42 @@ fviz_pca_biplot(
 )
 
 # Contributions des variables au CP1
-fviz_contrib(ch.fr.pca, choice = "var", axes = 1, top = 10)
+fviz_contrib(ch.fr.pca, choice = "var", axes = 1, top = 10, title="Contributions à la 1ère CP")
 # Contributions des variables au CP2
-fviz_contrib(ch.fr.pca, choice = "var", axes = 2, top = 10)
+fviz_contrib(ch.fr.pca, choice = "var", axes = 2, top = 10, title="Contributions à la 2ème CP")
 
 # Contributions des individus (regions) au CP1
-fviz_contrib(ch.fr.pca, choice = "ind", axes = 1, top = 10)
+fviz_contrib(ch.fr.pca, choice = "ind", axes = 1, top = 10, title="Contributions à la 1ère CP")
 # Contributions des individus (regions) to CP2
-fviz_contrib(ch.fr.pca, choice = "ind", axes = 2, top = 10)
+fviz_contrib(ch.fr.pca, choice = "ind", axes = 2, top = 10, title="Contributions à la 2ème CP")
 
 # Classification hierarchique :
-ch.fr.pca2 <- PCA(chercheurs.scaled)
-ch.fr.hcps <- HCPC(ch.fr.pca2)
+ch.fr.pca2 <- PCA(chercheurs.scaled, graph = FALSE)
+ch.fr.hcpc <- HCPC(ch.fr.pca2, nb.clust = 4, graph = FALSE)
+
+fviz_dend(ch.fr.hcpc, 
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8      # Augment the room for labels
+)
+
+fviz_cluster(ch.fr.hcpc,
+             repel = TRUE,            # Avoid label overlapping
+             show.clust.cent = TRUE, # Show cluster centers
+             palette = "jco",         # Color palette see ?ggpubr::ggpar
+             ggtheme = theme_minimal(),
+             main = "Factor map"
+)
+
+plot(ch.fr.hcpc, choice = "3D.map")
 
 # Visualisation de la classification hierarchique sur le ACP plot.
 fviz_pca_ind(ch.fr.pca,
              geom.ind = "point", # show points only (nbut not "text")
-             col.ind = ch.fr.hcps$data.clust$clust, # color by groups
-             palette = rainbow(length(ch.fr.hcps$data.clust$clust)),
+             col.ind = ch.fr.hcpc$data.clust$clust, # color by groups
+             palette = rainbow(length(ch.fr.hcpc$data.clust$clust)),
              addEllipses = TRUE, # Concentration ellipses
              legend.title = "Groups"
 )

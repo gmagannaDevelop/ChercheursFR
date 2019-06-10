@@ -54,16 +54,19 @@ barplot(ch.fr.scaled.cor.eigen$values, main = "Valeurs propres")
 ch.fr.pca <- dudi.pca(chercheurs.scaled, scann=FALSE, nf = 2)
 fviz_eig(ch.fr.pca) # C'est comme le barplot mais plus jolie.
 
+# On obtient les parametres diagnostiques :
 ch.fr.var <- get_pca_var(ch.fr.pca)
 ch.fr.var
 
+# La qualite de la representation de chaque individu (region de la France)
 fviz_pca_ind(
   ch.fr.pca,
   col.ind = "cos2", # Color by the quality of representation
-  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+  gradient.cols = rainbow(10),
   repel = TRUE     # Avoid text overlapping
 )
 
+# On peut voir les vecteurs des anciennes variables sur les composants principaux.
 fviz_pca_biplot(
   ch.fr.pca, 
   repel = TRUE,
@@ -71,21 +74,21 @@ fviz_pca_biplot(
   col.ind = "#696969"  # Individuals color
 )
 
-# Contributions of variables to PC1
+# Contributions des variables au CP1
 fviz_contrib(ch.fr.pca, choice = "var", axes = 1, top = 10)
-# Contributions of variables to PC2
+# Contributions des variables au CP2
 fviz_contrib(ch.fr.pca, choice = "var", axes = 2, top = 10)
 
-# Contributions of individuals to PC1
+# Contributions des individus (regions) au CP1
 fviz_contrib(ch.fr.pca, choice = "ind", axes = 1, top = 10)
-# Contributions of individuals to PC2
+# Contributions des individus (regions) to CP2
 fviz_contrib(ch.fr.pca, choice = "ind", axes = 2, top = 10)
 
-ch.fr.hcps <- HCPC(PCA(chercheurs.scaled))
+# Classification hierarchique :
+ch.fr.pca2 <- PCA(chercheurs.scaled)
+ch.fr.hcps <- HCPC(ch.fr.pca2)
 
-
-if (T){
-  # On a besoin de faire clustering pour faire cette visualisation
+# Visualisation de la classification hierarchique sur le ACP plot.
 fviz_pca_ind(ch.fr.pca,
              geom.ind = "point", # show points only (nbut not "text")
              col.ind = ch.fr.hcps$data.clust$clust, # color by groups
@@ -93,7 +96,7 @@ fviz_pca_ind(ch.fr.pca,
              addEllipses = TRUE, # Concentration ellipses
              legend.title = "Groups"
 )
-}
+
 
 # les variables correlees sont tres proche l une de l autre
 # plus la distance a l origine est frande meilleure est la projection

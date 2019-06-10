@@ -1,0 +1,79 @@
+---
+title: "Rapport Projet Statistiques multidimensionnelles - Groupe 2"
+author: "Gustavo MAGAANA LOPEZ, Simon MATTENS, Joachim SNEESSENS"
+date: "11 juin 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+##Introduction
+Ce projet est constitué de deux questions. La première consiste à produire l'analyse et le commentaire du fichier de données et la deuxième à décrire une méthode d'analyse non vue au cours. 
+
+Pour ce faire, nous avons utilisé le logiciel R. 
+
+
+##Question 1 
+Le fichier a analyser est le fichier "pourcentage_chercheurs_france.xslx".
+
+Chaque case spécifie la proportion de chercheurs dans la région spécifiée par la ligne pour une certaine année spécifiée par la colonne.
+Le but était d'effectuer une analyse en composantes principales des données, de dire si le profil est stable dans le temps et enfin de dégager des groupements de régions en fonction de leur comportement à l'aide d'une classification hiérarchique acendante.
+
+###ACP
+Le but de l'ACP est de réduire la dimension des données initiales (ici 8 car 8 années différentes) en remplaçant ces 8 variables initiales par n facteurs appropriés (avec n < 8).
+Avant de commencer l'ACP nous avons retiré la première colonne contenant les noms des différentes régions de France.
+Ci-dessous un boxplot des données non centrées non réduites.
+
+```{r somePlot, echo=FALSE, message=FALSE}
+
+library(ade4)
+library(xlsx)
+library(factoextra)
+library(dplyr)
+library(FactoMineR)
+
+clean.names <- function(x){
+  strsplit(x, 
+           split = "(",
+           fixed = TRUE)[[1]][[1]]
+}
+
+dataSet <- read.xlsx("D:/Users/Simon/Documents/BA3/StatMulti/Projet/data.xlsx",sheetIndex=1)
+
+# Construction de la matrice (DataFrame) :
+chercheurs <- dataSet
+row.names(chercheurs) <- chercheurs$geo.time
+row.names(chercheurs) <- unlist(lapply(row.names(chercheurs), clean.names))
+chercheurs <- subset(chercheurs, select = -c(geo.time))
+
+chercheurs.scaled <- scale(chercheurs)
+
+# Effet de la transformation sur la distribution des donnees :
+boxplot(chercheurs, main = "Avant centrage des donnees")
+```
+
+Après avoir effectué un centrage et une réduction des données, voici que donne le boxplot.
+
+```{r plot, echo=FALSE, message=FALSE}
+boxplot(chercheurs.scaled, main = "Apres centrage des donnees")
+```
+Nous pouvons remarquer que pour chaque année, les médianes sont inférieures aux moyennes ce qui signifie que la répartition est assez déséquilibrée. Néanmoins on constate que ce déséquilibre se retrouve pour chacune de ces variables, ces dernières ont des distributions relativement similaires.
+
+
+```{r plot2, echo=FALSE, message=FALSE}
+chercheurs.corr <- cor(chercheurs.scaled)
+ch.fr.scaled.cor.eigen <- eigen(chercheurs.corr)
+ch.fr.scaled.inertia <- ch.fr.scaled.cor.eigen$values / sum(ch.fr.scaled.cor.eigen$values)
+barplot(ch.fr.scaled.cor.eigen$values, main = "Valeurs propres")
+ch.fr.scaled.inertia
+```
+Cette étape a consisté dans un premier temps à calculer la matrice des corrélations de la matrice centrée-réduite pour dans un second temps en calculer les valeurs propres.
+Vu l'allure des valeurs propres nous allons garder deux axes comme la visualisation ne peut pas se faire correctement si on ne garde qu'un seul axe.
+
+```{r plot3, echo=FALSE, message=FALSE}
+ch.fr.pca <- dudi.pca(chercheurs, scann=FALSE, nf = 2)
+s.corcircle(ch.fr.pca$co)
+
+```

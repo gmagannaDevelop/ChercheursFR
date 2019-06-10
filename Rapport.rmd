@@ -76,7 +76,8 @@ ch.fr.scaled.inertia
 Cette étape a consisté dans un premier temps à calculer la matrice des corrélations de la matrice centrée-réduite pour dans un second temps en calculer les valeurs propres.
 Vu l'allure des valeurs propres nous allons garder deux axes comme la visualisation ne peut pas se faire correctement si on ne garde qu'un seul axe.
 
-```{r corrcircle, echo=FALSE, message=FALSE, fig.align="center"}
+### Cercle des corrélations
+```{r corrcircle, echo=FALSE, message=FALSE, fig.align="center", fig.width=5, fig.height=2.5}
 ch.fr.pca <- dudi.pca(chercheurs, scann=FALSE, nf = 2)
 s.corcircle(ch.fr.pca$co)
 ```
@@ -87,10 +88,8 @@ ont une forte corrélation les unes avec les autres. Nous savons aussi que elles
 négativement corrélées avec la première composante principale et elles sont bien représentées 
 sur celle-ci. Quelques-unes sont négativement corrélées avec la deuxième composante principale, 
 autres le sont positivement cependant la corrélation est très faible pour toutes.
-\vspace{12pt}
 
-Les deux figues suivantes nous servent à voir la qualité
-
+### ACP : Représentations complémentaires
 ```{r qualiteRep, echo=FALSE, message=FALSE, fig.align="center"}
 fviz_pca_ind(
   ch.fr.pca,
@@ -99,6 +98,10 @@ fviz_pca_ind(
   repel = TRUE     # Avoid text overlapping
 )
 ```
+\vspace{3pt}
+
+Visualisation de l'ACP où l'on trouve que les individus sont des points colorés 
+en fonction de la valeur du cosinus carré, c'est-á-dire la qualité de leur représentation dans l'ACP.
 
 ```{r biplot1, echo=FALSE, message=FALSE}
 # On peut voir les vecteurs des anciennes variables sur les composants principaux.
@@ -109,6 +112,14 @@ fviz_pca_biplot(
   col.ind = "#696969"  # Individuals color
 )
 ```
+
+Le biplot nous permet d'avoir la représentation simultanée des variables et individus que l'on
+a utilisés pour l'ACP. Dans un biplot, la direction des vecteurs correspodants aux variables
+nous permet de voir à grosso modo la corrélation que chaque variable a avec chaque composante principale.
+D'après le biplot, toutes les variables sont forte et négativement corrélées avec la première composante principale
+et faiblement corrélées avec la deuxième. Si à ce fait on ajoute la variation minimale expliquée par celle-ci, 
+nous avons que plus les régions sont à gauche dans le biplot, plus haute est la valeur qu'elles ont prise 
+pour toutes les années.
 
 \newpage
 
@@ -131,14 +142,14 @@ Disons que nous avons deux années où une région a augmenté ou diminué d'une
 La matrice de corrélations ne ressemblerait plus à celle que l'on a dans la figure précédente. 
 Pour simuler cette situation, nous créons un **corrplot** avec la matrice que l'on avait plus un peu de bruit.
 ```{r profilPasStable, echo=TRUE, message=FALSE, out.width='.42\\linewidth', fig.align='center'}
-foo <- apply(chercheurs, 2, function(x){ x + rnorm(n = length(x), mean = 1, sd = 0.5) })
+foo <- apply(chercheurs, 2, function(x){ x + rnorm(n = length(x), mean = 1, sd = 0.3) })
 foo.scaled <- scale(foo)
 corrplot(cor(foo.scaled), type="upper")
 ```
 \newpage
 
 Nous pouvons également ajouter à la justification de notre affirmation de la stabilité temporelle 
-du profil l'analyse des contributions des variables et individus aux composantes principales. 
+du profil l'analyse des contributions des variables aux composantes principales. 
 Il faut premièrement rappeler ce que l'on avait obtenu grâce au ACP : Deux composantes représentant 
 le 99,5% et 0,2% de la variation totale respectivement. Nous présentons les contributions des variables 
 à chacune des composantes principales. Il faut tenir en compte que ce qui se passe sur la deuxième 

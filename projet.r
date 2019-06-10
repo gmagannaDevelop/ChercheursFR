@@ -111,7 +111,7 @@ plot(ch.fr.hcpc, choice = "3D.map")
 # Visualisation de la classification hierarchique sur le ACP plot.
 fviz_pca_ind(ch.fr.pca,
              repel = TRUE,
-             geom.ind = c("point", "text") # show points only (nbut not "text")
+             geom.ind = c("point", "text"), # show points only (nbut not "text")
              col.ind = ch.fr.hcpc$data.clust$clust, # color by groups
              palette = c("red", "blue", "green"),
              addEllipses = TRUE, # Concentration ellipses

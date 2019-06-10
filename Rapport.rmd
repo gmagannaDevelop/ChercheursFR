@@ -1,5 +1,5 @@
 ---
-title: "Rapport Projet Statistiques multidimensionnelles - Groupe 2"
+title: "Rapport Projet Statistique multidimensionnelle - Groupe 2"
 author: "Gustavo MAGAÑA LÓPEZ, Simon MATTENS, Joachim SNEESSENS"
 date: "11 juin 2019"
 output: pdf_document
@@ -57,7 +57,7 @@ boxplot(chercheurs, main = "Avant centrage des données")
 
 Après avoir effectué un centrage et une réduction des données, voici que donne le boxplot.
 
-```{r plot, echo=FALSE, message=FALSE}
+```{r centrage, echo=FALSE, message=FALSE}
 boxplot(chercheurs.scaled, main = "Après centrage des données")
 ```
 \vspace{12pt}
@@ -65,7 +65,7 @@ boxplot(chercheurs.scaled, main = "Après centrage des données")
 Nous pouvons remarquer que pour chaque année, les médianes sont inférieures aux moyennes ce qui signifie que la répartition est assez déséquilibrée. Néanmoins nous constatons que ce déséquilibre se retrouve pour chacune de ces variables, ces dernières ont des distributions relativement similaires.
 
 
-```{r plot2, echo=FALSE, message=FALSE}
+```{r valeursPropres, echo=FALSE, message=FALSE}
 chercheurs.corr <- cor(chercheurs.scaled)
 ch.fr.scaled.cor.eigen <- eigen(chercheurs.corr)
 ch.fr.scaled.inertia <- ch.fr.scaled.cor.eigen$values / sum(ch.fr.scaled.cor.eigen$values)
@@ -76,16 +76,15 @@ ch.fr.scaled.inertia
 Cette étape a consisté dans un premier temps à calculer la matrice des corrélations de la matrice centrée-réduite pour dans un second temps en calculer les valeurs propres.
 Vu l'allure des valeurs propres nous allons garder deux axes comme la visualisation ne peut pas se faire correctement si on ne garde qu'un seul axe.
 
-```{r plot3, echo=FALSE, message=FALSE}
+```{r corrcircle, echo=FALSE, message=FALSE}
 ch.fr.pca <- dudi.pca(chercheurs, scann=FALSE, nf = 2)
 s.corcircle(ch.fr.pca$co)
-
 ```
 \vspace{12pt}
 
 Grâce au cercle de
 
-```{r plot4, echo=FALSE, message=FALSE}
+```{r qualiteRep, echo=FALSE, message=FALSE}
 fviz_pca_ind(
   ch.fr.pca,
   col.ind = "cos2", # Color by the quality of representation
@@ -94,7 +93,7 @@ fviz_pca_ind(
 )
 ```
 
-```{r plot5, echo=FALSE, message=FALSE}
+```{r biplot1, echo=FALSE, message=FALSE}
 # On peut voir les vecteurs des anciennes variables sur les composants principaux.
 fviz_pca_biplot(
   ch.fr.pca,
@@ -104,28 +103,87 @@ fviz_pca_biplot(
 )
 ```
 
+\newpage
+
 ## Stabilité temporelle du profil
 
-Salut
-```{r plot6, echo=FALSE, message=FALSE, out.width='.49\\linewidth', fig.align='center'}
+Pour faire cette partie de l'analyse nous avons utilisé plusieurs outils. 
+Au premier instant, la matrice de corrélation nous permet de voir s'il existe ou pas de corrélation entre chaque couple de variables. 
+Au moyen de la fonction **corrplot()** ce que l'on a est une matrice contenant des cercles colorés et une échelle de telle façon qu'il suffit un coup d'oeil pour avoir une vision générale des corrélations.
+Si l'on pense, chaque colonne que l'on a prise comme variable n'est autre qu'un vecteur contenant la valeur
+que chaque région a obtenue pour une année spécifique : le profil de l'année. 
+S'il existe une corrélation positive assez forte parmi les colonnes ça veut dire que le profil, 
+c'est-à-dire la rélation entre régions, est stable dans le temps. 
+
+```{r profilStable, echo=TRUE, message=FALSE, out.width='.42\\linewidth', fig.align='center'}
 chercheurs.corr <- cor(chercheurs.scaled)
-corrplot(chercheurs.corr)
+corrplot(chercheurs.corr, type="upper")
 ```
+Ces corrélations nous montrent que **le profil est stable dans le temps**. Pour justifier ce raisonement il suffit de penser au cas contraire : Un profil qui n'est pas stable dans le temps.
+Disons que nous avons deux années où une région a augmenté ou diminué d'une façon différente aux autres. 
+La matrice de corrélations ne ressemblerait plus à celle que l'on a dans la figure précédente. 
+Pour simuler cette situation, nous créons un **corrplot** avec la matrice que l'on avait plus un peu de bruit.
+```{r profilPasStable, echo=TRUE, message=FALSE, out.width='.42\\linewidth', fig.align='center'}
+foo <- apply(chercheurs, 2, function(x){ x + rnorm(n = length(x), mean = 1, sd = 0.5) })
+foo.scaled <- scale(foo)
+corrplot(cor(foo.scaled), type="upper")
+```
+\newpage
+
+Nous pouvons également ajouter à la justification de notre affirmation de la stabilité temporelle 
+du profil l'analyse des contributions des variables et individus aux composantes principales. 
+Il faut premièrement rappeler ce que l'on avait obtenu grâce au ACP : Deux composantes représentant 
+le 99,5% et 0,2% de la variation totale respectivement. Nous présentons les contributions des variables 
+à chacune des composantes principales. Il faut tenir en compte que ce qui se passe sur la deuxième 
+composante principale n'est pas très significatif donné qu'elle ne représente que le 0,2% de la variation.
+\vspace{12pt}
 
 Contributions des variables :
-```{r plot7, echo=FALSE, message=FALSE, out.width='.49\\linewidth', fig.width=3, fig.height=3}
+```{r contribVar, echo=FALSE, message=FALSE, out.width='.45\\linewidth', fig.width=3, fig.height=3}
 fviz_contrib(ch.fr.pca, choice = "var", axes = 1, top = 10, title="Contributions à la 1ère CP") 
 fviz_contrib(ch.fr.pca, choice = "var", axes = 2, top = 10, title="Contributions à la 2ème CP") 
 ```
+\vspace{12pt}
 
-Contributions des individus :
-```{r plot8, echo=FALSE, message=FALSE, out.width='.49\\linewidth', fig.width=3, fig.height=3}
-fviz_contrib(ch.fr.pca, choice = "ind", axes = 1, top = 10, title="Contributions à la 1ère CP") 
-fviz_contrib(ch.fr.pca, choice = "ind", axes = 2, top = 10, title="Contributions à la 2ème CP") 
+Nous pouvons voir que chaque année contribue également à la première composante principale. 
+Si le profil changeait considérablement pour un année, sa variation serait différente à celles des autres, 
+ce qui nous donnerait une autre distribution. 
+
+
+
+Analyse des variances :
+```{r plot9, echo=TRUE, message=FALSE}
+var.regions <- apply(chercheurs, 1, function(x){ var(as.numeric(x)) })
+var.annees <- apply(chercheurs, 2, function(x){ var(as.numeric(x)) })
+var.regions
+var.annees
 ```
 
+```{r hcpcArbre, echo=FALSE, message=FALSE}
 # Classification hierarchique :
-ch.fr.pca2 <- PCA(chercheurs.scaled)
-ch.fr.hcps <- HCPC(ch.fr.pca2, nb.clust = 2)
+ch.fr.pca2 <- PCA(chercheurs.scaled, graph = FALSE)
+ch.fr.hcpc <- HCPC(ch.fr.pca2, nb.clust = 3, graph = FALSE)
+fviz_dend(ch.fr.hcpc,
+          cex = 0.7,                     # Label size
+          palette = "jco",               # Color palette see ?ggpubr::ggpar
+          rect = TRUE, rect_fill = TRUE, # Add rectangle around groups
+          rect_border = "jco",           # Rectangle color
+          labels_track_height = 0.8      # Augment the room for labels
+)
+```
+\vspace{12pt}
+
+Holla
+
+```{r hcpcClusters, echo=FALSE, message=FALSE}
+fviz_cluster(ch.fr.hcpc,
+             repel = TRUE,            # Avoid label overlapping
+             show.clust.cent = TRUE, # Show cluster centers
+             palette = "jco",         # Color palette see ?ggpubr::ggpar
+             ggtheme = theme_minimal(),
+             main = "Factor map"
+)
+
+```
 
 

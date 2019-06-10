@@ -88,7 +88,7 @@ fviz_contrib(ch.fr.pca, choice = "ind", axes = 2, top = 10, title="Contributions
 
 # Classification hierarchique :
 ch.fr.pca2 <- PCA(chercheurs.scaled, graph = FALSE)
-ch.fr.hcpc <- HCPC(ch.fr.pca2, nb.clust = 4, graph = FALSE)
+ch.fr.hcpc <- HCPC(ch.fr.pca2, nb.clust = 3, graph = FALSE)
 
 fviz_dend(ch.fr.hcpc, 
           cex = 0.7,                     # Label size

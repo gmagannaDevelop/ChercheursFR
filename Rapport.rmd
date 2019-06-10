@@ -76,15 +76,22 @@ ch.fr.scaled.inertia
 Cette étape a consisté dans un premier temps à calculer la matrice des corrélations de la matrice centrée-réduite pour dans un second temps en calculer les valeurs propres.
 Vu l'allure des valeurs propres nous allons garder deux axes comme la visualisation ne peut pas se faire correctement si on ne garde qu'un seul axe.
 
-```{r corrcircle, echo=FALSE, message=FALSE}
+```{r corrcircle, echo=FALSE, message=FALSE, fig.align="center"}
 ch.fr.pca <- dudi.pca(chercheurs, scann=FALSE, nf = 2)
 s.corcircle(ch.fr.pca$co)
 ```
+\vspace{5pt}
+
+Grâce au cercle de corrélations, nous pouvons voir que toutes les variables (années) 
+ont une forte corrélation les unes avec les autres. Nous savons aussi que elles sont 
+négativement corrélées avec la première composante principale et elles sont bien représentées 
+sur celle-ci. Quelques-unes sont négativement corrélées avec la deuxième composante principale, 
+autres le sont positivement cependant la corrélation est très faible pour toutes.
 \vspace{12pt}
 
-Grâce au cercle de
+Les deux figues suivantes nous servent à voir la qualité
 
-```{r qualiteRep, echo=FALSE, message=FALSE}
+```{r qualiteRep, echo=FALSE, message=FALSE, fig.align="center"}
 fviz_pca_ind(
   ch.fr.pca,
   col.ind = "cos2", # Color by the quality of representation
@@ -149,7 +156,10 @@ Nous pouvons voir que chaque année contribue également à la première composa
 Si le profil changeait considérablement pour un année, sa variation serait différente à celles des autres, 
 ce qui nous donnerait une autre distribution. 
 
-
+Pour justifier encore notre affirmation, nous affichons les variations temporelles pour chaque région (**var.regions**) 
+et les variations régionales pour chaque année (**var.annees**). 
+Ce que l'on voit c'est une variation beaucoup plus importante dans chaque année 
+(ça veut dire que les régions sont bien différentes pour l'année) que dans chaque région (au fil du temps).
 
 Analyse des variances :
 ```{r plot9, echo=TRUE, message=FALSE}

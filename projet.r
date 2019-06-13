@@ -68,6 +68,14 @@ fviz_pca_ind(
   repel = TRUE     # Avoid text overlapping
 )
 
+fviz_pca_biplot(ch.fr.pca, col.ind="cos2") +
+  scale_color_gradient2(low="red", mid="blue",
+                        high="green", midpoint=0.85)
+
+fviz_pca_biplot(ch.fr.pca, col.ind="contrib", repel = TRUE) +
+  scale_color_gradient2(low="blue", mid="green",
+                        high="red", midpoint=15)
+
 # On peut voir les vecteurs des anciennes variables sur les composants principaux.
 fviz_pca_biplot(
   ch.fr.pca, 

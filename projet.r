@@ -14,12 +14,36 @@ library(factoextra)
 library(dplyr)
 library(FactoMineR)
 library(corrplot)
+library(ggplot2)
+library(ez)
 
 ## Fonction pour nettoyer les donnees :
 clean.names <- function(x){
   strsplit(x, 
            split = "(",
            fixed = TRUE)[[1]][[1]]
+}
+
+clean.years <- function(x){
+  as.numeric(
+    strsplit(x, "X")[[1]][[2]]
+  )
+}
+
+ggplotRegression <- function (fit, title) {
+# Fonction originale : https://sejohnston.com/2012/08/09/a-quick-and-easy-function-to-plot-lm-results-in-r/  
+  require(ggplot2)
+  
+  print(
+    ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) + 
+      geom_point() +
+      stat_smooth(method = "lm", col = "red") +
+      labs(title = paste(title, "  :   ",
+                         "Adj R2 = ",signif(summary(fit)$adj.r.squared, 5),
+                         " P-value =",signif(summary(fit)$coef[2,4], 5)
+                        )
+          )
+    )
 }
 
 # Importation des donnees depuis le fichier :
@@ -36,6 +60,10 @@ summary(chercheurs)
 # On centre les donnees
 chercheurs.scaled <- scale(chercheurs)
 
+### Tout ce qu'il y a dans le if (FALSE)
+### c'est l'ancien analyse que l'on avait fait.
+### Cette mise a jour commence a partir de la ligne 166
+if (FALSE){
 # Effet de la transformation sur la distribution des donnees :
 boxplot(chercheurs, main = "avant centrage des donnees")
 boxplot(chercheurs.scaled, main = "apres centrage des donnees")
@@ -132,5 +160,50 @@ fviz_pca_ind(ch.fr.pca,
 # co = column coordinate
 # c1 = column normed scores ie principal axes
 s.corcircle(ch.fr.pca$co)
+}
 
 
+### 
+### Extra : analyse de la stabilite temporelle du profil.
+### Au moyen de regression lineaire.
+my.var <- apply(chercheurs, 2, mean)
+my.var <- as.data.frame(my.var)
+my.var$year <- unlist(lapply(rownames(my.var), clean.years))
+rownames(my.var) <- NULL
+colnames(my.var) <- c("moyenne", "annee")
+
+regression1 <- lm(moyenne ~ annee, data = my.var)
+summary(regression1)
+
+#ggplot(my.var, aes(x=annee, y=moyenne)) +
+ # geom_point(shape=1) +
+  #  geom_smooth(method=lm)
+ggplotRegression(regression1, "Moyenne de toutes les regions")
+
+
+## Nous trouvons une evolution lineaire au fil du temps, ce qui est contraire
+## a notre premiere conclusion. Meme si c'est vrai que l'on trouve plus
+## de variance dans les groupes qu'au fil du temps, on peut voir une croissance
+## stable et significative du pourcentage des chercheurs en fonction du temps.
+
+my.years <- unlist(
+              lapply(colnames(chercheurs), clean.years)
+            )
+
+# Faire une regression lineaire pour chaque region
+regressions <- vector("list", length = length(rownames(chercheurs)))
+for (i in 1:length(rownames(chercheurs))){
+  regressions[[i]] <- lm(as.numeric(chercheurs[i, ]) ~ my.years)
+}
+
+# Afficher les resultats
+# !!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+# Effacer tous les plots existents avant d'executer !
+# 22 plots seront crees !
+for (i in 1:length(rownames(chercheurs))){
+  ggplotRegression(regressions[[i]], rownames(chercheurs)[i])
+}
+
+# On peut bien voir qu'il y a des regions
+# ou l'on trouve un comportement de croissance claire
+# tandis qu'autres varient beaucoup.
